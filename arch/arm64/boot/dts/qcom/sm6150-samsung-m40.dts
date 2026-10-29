@@ -1,0 +1,70 @@
+// SPDX-License-Identifier: GPL-2.0-only
+
+/dts-v1/;
+
+#include <dt-bindings/clock/qcom,qcs615-dispcc.h>
+#include <dt-bindings/clock/qcom,qcs615-gcc.h>
+#include "talos.dtsi"
+#include "pm6150.dtsi"
+#include "pm6150l.dtsi"
+
+/ {
+	model = "Samsung Galaxy M40";
+	compatible = "samsung,m40", "qcom,qcs615", "qcom,sm6150";
+
+	clocks {
+		sleep_clk: sleep-clk {
+			compatible = "fixed-clock";
+			clock-frequency = <32764>;
+			#clock-cells = <0>;
+		};
+
+		xo_board_clk: xo-board-clk {
+			compatible = "fixed-clock";
+			clock-frequency = <38400000>;
+			#clock-cells = <0>;
+		};
+	};
+
+	aliases {
+		mmc0 = &sdhc_1;
+		mmc1 = &sdhc_2;
+	};
+
+	chosen {
+		#address-cells = <2>;
+		#size-cells = <2>;
+
+		framebuffer@9c000000 {
+			compatible = "simple-framebuffer";
+			reg = <0x0 0x9c000000 0x0 0x00f00000>;
+			width = <1080>;
+			height = <2340>;
+			stride = <4320>;
+			/* Confirm pixel order and stride against the bootloader framebuffer. */
+			format = "a8r8g8b8";
+			clocks = <&gcc GCC_DISP_HF_AXI_CLK>,
+				 <&dispcc DISP_CC_MDSS_AHB_CLK>;
+		};
+	};
+
+	reserved-memory {
+		#address-cells = <2>;
+		#size-cells = <2>;
+		ranges;
+
+		framebuffer@9c000000 {
+			reg = <0x0 0x9c000000 0x0 0x00f00000>;
+			no-map;
+		};
+
+		ramoops@a1300000 {
+			compatible = "ramoops";
+			reg = <0x0 0xa1300000 0x0 0x00100000>;
+			record-size = <0x00040000>;
+			console-size = <0x00040000>;
+			ftrace-size = <0x00040000>;
+			pmsg-size = <0x00040000>;
+		};
+	};
+};
