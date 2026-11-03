@@ -4,6 +4,7 @@
 
 #include <dt-bindings/clock/qcom,qcs615-dispcc.h>
 #include <dt-bindings/clock/qcom,qcs615-gcc.h>
+#include <dt-bindings/regulator/qcom,rpmh-regulator.h>
 #include "talos.dtsi"
 #include "pm6150.dtsi"
 #include "pm6150l.dtsi"
@@ -11,6 +12,10 @@
 / {
 	model = "Samsung Galaxy M40";
 	compatible = "samsung,m40", "qcom,qcs615", "qcom,sm6150";
+	chassis-type = "handset";
+
+	qcom,msm-id = <0x163 0x00>;
+	qcom,board-id = <0x22 0x08>;
 
 	clocks {
 		sleep_clk: sleep-clk {
@@ -37,14 +42,13 @@
 
 		framebuffer@9c000000 {
 			compatible = "simple-framebuffer";
-			reg = <0x0 0x9c000000 0x0 0x00f00000>;
+			reg = <0x0 0x9c000000 0x0 0x009a3f80>;
 			width = <1080>;
 			height = <2340>;
 			stride = <4320>;
 			/* Confirm pixel order and stride against the bootloader framebuffer. */
 			format = "a8r8g8b8";
-			clocks = <&gcc GCC_DISP_HF_AXI_CLK>,
-				 <&dispcc DISP_CC_MDSS_AHB_CLK>;
+			clocks = <&gcc GCC_DISP_HF_AXI_CLK>;
 		};
 	};
 
@@ -58,6 +62,86 @@
 			no-map;
 		};
 
+		hyp_mem: hyp@85700000 {
+			reg = <0x0 0x85700000 0x0 0x00600000>;
+			no-map;
+		};
+
+		xbl_aop_mem: xbl-aop@85d00000 {
+			reg = <0x0 0x85d00000 0x0 0x00220000>;
+			no-map;
+		};
+
+		sec_apps_mem: sec-apps@85fff000 {
+			reg = <0x0 0x85fff000 0x0 0x00001000>;
+			no-map;
+		};
+
+		removed_mem: removed@86200000 {
+			reg = <0x0 0x86200000 0x0 0x05600000>;
+			no-map;
+		};
+
+		camera_mem: camera@8cb00000 {
+			reg = <0x0 0x8cb00000 0x0 0x00500000>;
+			no-map;
+		};
+
+		modem_mem: modem@8d000000 {
+			reg = <0x0 0x8d000000 0x0 0x08c00000>;
+			no-map;
+		};
+
+		wlan_msa_mem: wlan-msa@96100000 {
+			reg = <0x0 0x96100000 0x0 0x00200000>;
+			no-map;
+		};
+
+		ipa_fw_mem: ipa-fw@9a900000 {
+			reg = <0x0 0x9a900000 0x0 0x00010000>;
+			no-map;
+		};
+
+		ipa_gsi_mem: ipa-gsi@9a910000 {
+			reg = <0x0 0x9a910000 0x0 0x00005000>;
+			no-map;
+		};
+
+		qseecom_mem: qseecom@9e400000 {
+			reg = <0x0 0x9e400000 0x0 0x02400000>;
+			no-map;
+		};
+
+		cdsp_sec_mem: cdsp-sec@a4000000 {
+			reg = <0x0 0xa4000000 0x0 0x00c00000>;
+			no-map;
+		};
+
+		ss_plog_mem: ss-plog@a1100000 {
+			reg = <0x0 0xa1100000 0x0 0x00200000>;
+			no-map;
+		};
+
+		sec_debug_mem: sec-debug@a1400000 {
+			reg = <0x0 0xa1400000 0x0 0x00800000>;
+			no-map;
+		};
+
+		tima_mem: tima@b0100000 {
+			reg = <0x0 0xb0100000 0x0 0x00100000>;
+			no-map;
+		};
+
+		/* Keep UH_LOG in the linear map; do not reserve the larger uH heap here. */
+		rkp_mem: rkp@b0200000 {
+			reg = <0x0 0xb0200000 0x0 0x00200000>;
+		};
+
+		modem_shared_mem: modem-shared@ba000000 {
+			reg = <0x0 0xba000000 0x0 0x06000000>;
+			no-map;
+		};
+
 		ramoops@a1300000 {
 			compatible = "ramoops";
 			reg = <0x0 0xa1300000 0x0 0x00100000>;
@@ -67,4 +151,77 @@
 			pmsg-size = <0x00040000>;
 		};
 	};
+};
+
+&pil_video_mem {
+	reg = <0x0 0x95c00000 0x0 0x00500000>;
+};
+
+&rproc_cdsp_mem {
+	reg = <0x0 0x96300000 0x0 0x01e00000>;
+};
+
+&rproc_adsp_mem {
+	reg = <0x0 0x98100000 0x0 0x02800000>;
+};
+
+&pil_gpu_mem {
+	reg = <0x0 0x9a915000 0x0 0x00002000>;
+};
+
+&tlmm {
+	/*
+	 * Bring-up superset of pins owned by peripherals that may be
+	 * TZ-controlled (fingerprint 42/93/94, NFC 84-86/50, ...).
+	 * NOT confirmed protected: delete and retest once the board boots.
+	 * Pins 0-3 are deliberately not listed (SE0 may be the debug UART).
+	 */
+	gpio-reserved-ranges = <6 4>, <14 2>, <23 1>, <42 1>, <50 1>, <84 4>, <93 2>;
+};
+
+&apps_rsc {
+	regulators-0 {
+		compatible = "qcom,pm6150-rpmh-regulators";
+		qcom,pmic-id = "a";
+
+		vreg_l4a_usb: ldo4 {
+			regulator-name = "m40-usb-phy-vdd";
+			regulator-min-microvolt = <875000>;
+			regulator-max-microvolt = <975000>;
+			regulator-initial-mode = <RPMH_REGULATOR_MODE_LPM>;
+		};
+
+		vreg_l11a_usb: ldo11 {
+			regulator-name = "m40-usb-phy-vdda-pll";
+			regulator-min-microvolt = <1800000>;
+			regulator-max-microvolt = <1890000>;
+			regulator-initial-mode = <RPMH_REGULATOR_MODE_LPM>;
+		};
+
+		vreg_l17a_usb: ldo17 {
+			regulator-name = "m40-usb-phy-vdda-dpdm";
+			regulator-min-microvolt = <3000000>;
+			regulator-max-microvolt = <3230000>;
+			regulator-initial-mode = <RPMH_REGULATOR_MODE_LPM>;
+		};
+	};
+};
+
+&usb_1_hsphy {
+	vdd-supply = <&vreg_l4a_usb>;
+	vdda-pll-supply = <&vreg_l11a_usb>;
+	vdda-phy-dpdm-supply = <&vreg_l17a_usb>;
+	status = "okay";
+};
+
+&usb_qmpphy {
+	status = "disabled";
+};
+
+&usb_1 {
+	dr_mode = "peripheral";
+	maximum-speed = "high-speed";
+	phys = <&usb_1_hsphy>;
+	phy-names = "usb2-phy";
+	status = "okay";
 };
