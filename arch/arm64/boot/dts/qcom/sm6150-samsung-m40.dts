@@ -2,34 +2,13 @@
 
 /dts-v1/;
 
-#include <dt-bindings/clock/qcom,qcs615-dispcc.h>
-#include <dt-bindings/clock/qcom,qcs615-gcc.h>
-#include <dt-bindings/regulator/qcom,rpmh-regulator.h>
-#include "talos.dtsi"
-#include "pm6150.dtsi"
-#include "pm6150l.dtsi"
+#include "sm6150-samsung-common.dtsi"
 
 / {
 	model = "Samsung Galaxy M40";
 	compatible = "samsung,m40", "qcom,qcs615", "qcom,sm6150";
-	chassis-type = "handset";
-
-	qcom,msm-id = <0x163 0x00>;
 	qcom,board-id = <0x22 0x08>;
 
-	clocks {
-		sleep_clk: sleep-clk {
-			compatible = "fixed-clock";
-			clock-frequency = <32764>;
-			#clock-cells = <0>;
-		};
-
-		xo_board_clk: xo-board-clk {
-			compatible = "fixed-clock";
-			clock-frequency = <38400000>;
-			#clock-cells = <0>;
-		};
-	};
 
 	aliases {
 		mmc0 = &sdhc_1;
@@ -52,121 +31,112 @@
 		};
 	};
 
-	reserved-memory {
-		#address-cells = <2>;
-		#size-cells = <2>;
-		ranges;
+	i2c_bl: i2c-bl {
+		compatible = "i2c-gpio";
+		sda-gpios = <&tlmm 21 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
+		scl-gpios = <&tlmm 22 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&bl_i2c_default>;
+		#address-cells = <1>;
+		#size-cells = <0>;
 
-		framebuffer@9c000000 {
-			reg = <0x0 0x9c000000 0x0 0x00f00000>;
-			no-map;
+	};
+
+};
+
+&i2c_bl {                                  /* i2c-gpio node on tlmm 21/22 */
+	lm36274: backlight-controller@11 {
+		compatible = "ti,lm36274";
+		reg = <0x11>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		enable-gpios = <&tlmm 25 GPIO_ACTIVE_HIGH>;      /* HWEN */
+		pinctrl-names = "default";
+		pinctrl-0 = <&lcd_bias_default>;                 /* gpio 25, 97, 103 */
+
+		regulators {
+			compatible = "ti,lm363x-regulator";
+			#address-cells = <1>;
+			#size-cells = <0>;
+
+			enable-gpios = <&tlmm 97 GPIO_ACTIVE_HIGH>,   /* ENP -> vpos */
+				       <&tlmm 103 GPIO_ACTIVE_HIGH>;  /* ENN -> vneg */
+
+			lcd_vpos: vpos {
+				regulator-name = "lcd_vpos";
+				regulator-min-microvolt = <5500000>;
+				regulator-max-microvolt = <5500000>;
+				regulator-enable-ramp-delay = <1500>;
+			};
+
+			lcd_vneg: vneg {
+				regulator-name = "lcd_vneg";
+				regulator-min-microvolt = <5500000>;
+				regulator-max-microvolt = <5500000>;
+				regulator-enable-ramp-delay = <15000>;
+			};
+			/* no vboost node: Samsung never programs it, keep the default */
 		};
 
-		hyp_mem: hyp@85700000 {
-			reg = <0x0 0x85700000 0x0 0x00600000>;
-			no-map;
-		};
+		backlight {
+			compatible = "ti,lm36274-backlight";
+			#address-cells = <1>;
+			#size-cells = <0>;
 
-		xbl_aop_mem: xbl-aop@85d00000 {
-			reg = <0x0 0x85d00000 0x0 0x00220000>;
-			no-map;
-		};
-
-		sec_apps_mem: sec-apps@85fff000 {
-			reg = <0x0 0x85fff000 0x0 0x00001000>;
-			no-map;
-		};
-
-		removed_mem: removed@86200000 {
-			reg = <0x0 0x86200000 0x0 0x05600000>;
-			no-map;
-		};
-
-		camera_mem: camera@8cb00000 {
-			reg = <0x0 0x8cb00000 0x0 0x00500000>;
-			no-map;
-		};
-
-		modem_mem: modem@8d000000 {
-			reg = <0x0 0x8d000000 0x0 0x08c00000>;
-			no-map;
-		};
-
-		wlan_msa_mem: wlan-msa@96100000 {
-			reg = <0x0 0x96100000 0x0 0x00200000>;
-			no-map;
-		};
-
-		ipa_fw_mem: ipa-fw@9a900000 {
-			reg = <0x0 0x9a900000 0x0 0x00010000>;
-			no-map;
-		};
-
-		ipa_gsi_mem: ipa-gsi@9a910000 {
-			reg = <0x0 0x9a910000 0x0 0x00005000>;
-			no-map;
-		};
-
-		qseecom_mem: qseecom@9e400000 {
-			reg = <0x0 0x9e400000 0x0 0x02400000>;
-			no-map;
-		};
-
-		cdsp_sec_mem: cdsp-sec@a4000000 {
-			reg = <0x0 0xa4000000 0x0 0x00c00000>;
-			no-map;
-		};
-
-		ss_plog_mem: ss-plog@a1100000 {
-			reg = <0x0 0xa1100000 0x0 0x00200000>;
-			no-map;
-		};
-
-		sec_debug_mem: sec-debug@a1400000 {
-			reg = <0x0 0xa1400000 0x0 0x00800000>;
-			no-map;
-		};
-
-		tima_mem: tima@b0100000 {
-			reg = <0x0 0xb0100000 0x0 0x00100000>;
-			no-map;
-		};
-
-		/* Keep UH_LOG in the linear map; do not reserve the larger uH heap here. */
-		rkp_mem: rkp@b0200000 {
-			reg = <0x0 0xb0200000 0x0 0x00200000>;
-		};
-
-		modem_shared_mem: modem-shared@ba000000 {
-			reg = <0x0 0xba000000 0x0 0x06000000>;
-			no-map;
-		};
-
-		ramoops@a1300000 {
-			compatible = "ramoops";
-			reg = <0x0 0xa1300000 0x0 0x00100000>;
-			record-size = <0x00040000>;
-			console-size = <0x00040000>;
-			ftrace-size = <0x00040000>;
-			pmsg-size = <0x00040000>;
+			led@0 {
+				reg = <0>;
+				led-sources = <0 1 2 3>;          /* BL_EN write = 0x1F */
+				label = "white:backlight";
+			};
 		};
 	};
 };
 
-&pil_video_mem {
-	reg = <0x0 0x95c00000 0x0 0x00500000>;
+&display_panel {
+	compatible = "csot,nt36672a-pm6300jb1";
+	vddpos-supply = <&lcd_vpos>;         /* LM36274 vpos, ENP tlmm 97 */
+	vddneg-supply = <&lcd_vneg>;         /* LM36274 vneg, ENN tlmm 103 */
+
+	status = "okay";
 };
 
-&rproc_cdsp_mem {
-	reg = <0x0 0x96300000 0x0 0x01e00000>;
+&i2c1 {
+	status = "okay";
+	clock-frequency = <400000>;
+
+	novatek_ts: touchscreen@62 {
+		compatible = "novatek,nt36672a-ts";
+		reg = <0x62>;
+		interrupts-extended = <&tlmm 89 IRQ_TYPE_EDGE_FALLING>;
+		vcc-supply = <&vreg_l18a_3p0>;
+		iovcc-supply = <&vreg_l15a_1p8>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&tsp_int>;
+		touchscreen-size-x = <1080>;
+		touchscreen-size-y = <2340>;
+
 };
 
-&rproc_adsp_mem {
-	reg = <0x0 0x98100000 0x0 0x02800000>;
 };
 
-&pil_gpu_mem {
-	reg = <0x0 0x9a915000 0x0 0x00002000>;
+&gpu_zap_shader {
+	firmware-name = "qcom/m40/a612_zap.mdt";
+};
+
+&remoteproc_adsp {
+	status = "okay";
+	firmware-name = "qcom/m40/adsp.mdt";
+};
+
+&remoteproc_cdsp {
+	status = "okay";
+	firmware-name = "qcom/m40/cdsp.mdt";
+};
+
+&venus {
+	status = "okay";
+	firmware-name = "qcom/m40/venus.mdt";
 };
 
 &tlmm {
@@ -177,49 +147,33 @@
 	 * Pins 0-3 are deliberately not listed (SE0 may be the debug UART).
 	 */
 	gpio-reserved-ranges = <6 4>, <14 2>, <23 1>, <42 1>, <50 1>, <84 4>, <93 2>;
-};
 
-&apps_rsc {
-	regulators-0 {
-		compatible = "qcom,pm6150-rpmh-regulators";
-		qcom,pmic-id = "a";
+	tsp_int: tsp_int_pins {
+		pins = "gpio89";   /* INT */
+		function = "gpio";
+		input-enable;
+		bias-disable;
+	};
 
-		vreg_l4a_usb: ldo4 {
-			regulator-name = "m40-usb-phy-vdd";
-			regulator-min-microvolt = <875000>;
-			regulator-max-microvolt = <975000>;
-			regulator-initial-mode = <RPMH_REGULATOR_MODE_LPM>;
-			regulator-allow-set-load;
-			regulator-allowed-modes = <RPMH_REGULATOR_MODE_LPM
-						   RPMH_REGULATOR_MODE_HPM>;
-		};
+	lcd_bias_default: lcd-bias-default-state {
+		pins = "gpio25", "gpio97", "gpio103";   /* HWEN, ENP, ENN */
+		function = "gpio";
+		drive-strength = <8>;
+		bias-disable;
+	};
 
-		vreg_l11a_usb: ldo11 {
-			regulator-name = "m40-usb-phy-vdda-pll";
-			regulator-min-microvolt = <1800000>;
-			regulator-max-microvolt = <1890000>;
-			regulator-initial-mode = <RPMH_REGULATOR_MODE_LPM>;
-			regulator-allow-set-load;
-			regulator-allowed-modes = <RPMH_REGULATOR_MODE_LPM
-						   RPMH_REGULATOR_MODE_HPM>;
-		};
-
-		vreg_l17a_usb: ldo17 {
-			regulator-name = "m40-usb-phy-vdda-dpdm";
-			regulator-min-microvolt = <3000000>;
-			regulator-max-microvolt = <3230000>;
-			regulator-initial-mode = <RPMH_REGULATOR_MODE_LPM>;
-			regulator-allow-set-load;
-			regulator-allowed-modes = <RPMH_REGULATOR_MODE_LPM
-						   RPMH_REGULATOR_MODE_HPM>;
-		};
+	bl_i2c_default: bl-i2c-default-state {
+		pins = "gpio21", "gpio22";
+		function = "gpio";
+		drive-strength = <2>;
+		bias-disable;
 	};
 };
 
 &usb_1_hsphy {
-	vdd-supply = <&vreg_l4a_usb>;
-	vdda-pll-supply = <&vreg_l11a_usb>;
-	vdda-phy-dpdm-supply = <&vreg_l17a_usb>;
+	vdd-supply = <&vreg_l4a_0p9>;
+	vdda-pll-supply = <&vreg_l11a_1p8>;
+	vdda-phy-dpdm-supply = <&vreg_l17a_3p0>;
 	status = "okay";
 };
 
