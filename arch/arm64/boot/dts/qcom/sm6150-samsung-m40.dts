@@ -98,11 +98,11 @@
 	vddpos-supply = <&lcd_vpos>;         /* LM36274 vpos, ENP tlmm 97 */
 	vddneg-supply = <&lcd_vneg>;         /* LM36274 vneg, ENN tlmm 103 */
 
-	status = "okay";
+	status = "disabled";
 };
 
 &i2c1 {
-	status = "okay";
+	status = "disabled";
 	clock-frequency = <400000>;
 
 	novatek_ts: touchscreen@62 {
@@ -146,7 +146,7 @@
 	 * NOT confirmed protected: delete and retest once the board boots.
 	 * Pins 0-3 are deliberately not listed (SE0 may be the debug UART).
 	 */
-	gpio-reserved-ranges = <6 4>, <14 2>, <23 1>, <42 1>, <50 1>, <84 4>, <93 2>;
+	gpio-reserved-ranges = <0 4>, <6 4>, <14 2>, <23 1>, <42 1>, <50 1>, <84 4>, <93 2>;
 
 	tsp_int: tsp_int_pins {
 		pins = "gpio89";   /* INT */

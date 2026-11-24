@@ -510,7 +510,7 @@
 
 &mdss_dsi0 {
 	vdda-supply = <&vreg_l3c_1p2>;
-	status = "okay";
+	status = "disabled";
 
 	display_panel: panel@0 {
 		reg = <0>;
@@ -647,7 +647,7 @@
 	vdd-1.8-xo-supply = <&vreg_l1c_1p8>;
 	vdd-1.3-rfa-supply = <&vreg_l2c_1p3>;
 	vdd-3.3-ch0-supply = <&vreg_l10c_3p3>;
-	status = "okay";
+	status = "disabled";
 };
 
 /* Bluetooth UART pins: talos.dtsi has pins/function, board adds bias */
@@ -673,7 +673,7 @@
 
 /* WCN3990 Bluetooth on the geni UART at 0xa8c000 */
 &uart7 {
-	status = "okay";
+	status = "disabled";
 
 	bluetooth: bluetooth {
 		compatible = "qcom,wcn3990-bt";
