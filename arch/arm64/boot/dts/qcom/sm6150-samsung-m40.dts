@@ -39,6 +39,7 @@
 		pinctrl-0 = <&bl_i2c_default>;
 		#address-cells = <1>;
 		#size-cells = <0>;
+		status = "disabled";
 
 	};
 
@@ -125,17 +126,17 @@
 };
 
 &remoteproc_adsp {
-	status = "okay";
+	status = "disabled";
 	firmware-name = "qcom/m40/adsp.mdt";
 };
 
 &remoteproc_cdsp {
-	status = "okay";
+	status = "disabled";
 	firmware-name = "qcom/m40/cdsp.mdt";
 };
 
 &venus {
-	status = "okay";
+	status = "disabled";
 	firmware-name = "qcom/m40/venus.mdt";
 };
 

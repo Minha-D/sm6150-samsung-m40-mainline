@@ -76,7 +76,6 @@
 			no-map;
 		};
 
-
 		hyp_mem: hyp@85700000 {
 			reg = <0x0 0x85700000 0x0 0x00600000>;
 			no-map;
@@ -176,6 +175,7 @@
 		/* Keep UH_LOG in the linear map; do not reserve the larger uH heap here. */
 		rkp_mem: rkp@b0200000 {
 			reg = <0x0 0xb0200000 0x0 0x00200000>;
+			no-map;
 		};
 
 		modem_shared_mem: modem-shared@ba000000 {
@@ -613,7 +613,7 @@
 	vqmmc-supply = <&vreg_l12a_1p8>;
 
 	non-removable;
-	status = "okay";
+	status = "disabled";
 };
 
 &sdc1_state_on {

@@ -1348,4 +1348,12 @@ config DRM_PANEL_XINPENG_XPP055C272
 	  Say Y here if you want to enable support for the Xinpeng
 	  XPP055C272 controller for 720x1280 LCD panels with MIPI/RGB/SPI
 	  system interfaces.
+
+config DRM_PANEL_NOVATEK_NT36672A_PM6300JB1
+	tristate "Novatek NT36672A PM6300JB1 DSI panel (Samsung M40)"
+	depends on OF
+	depends on DRM_MIPI_DSI
+	help
+	  Driver for the Novatek NT36672A based PM6300JB1 FHD video mode
+	  DSI panel found on the Samsung Galaxy M40.
 endmenu
