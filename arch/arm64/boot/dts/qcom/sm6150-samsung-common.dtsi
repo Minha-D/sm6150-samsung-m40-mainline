@@ -190,13 +190,14 @@
 			console-size = <0x00040000>;
 			ftrace-size = <0x00040000>;
 			pmsg-size = <0x00040000>;
+			no-map;
 		};
 	};
 
 };
 
 &apps_rsc {
-	regulator-0 {
+	regulators-0 {
 		compatible = "qcom,pm6150-rpmh-regulators";
 		qcom,pmic-id = "a";
 
@@ -362,7 +363,7 @@
 
 	};
 
-	regulator-1 {
+	regulators-1 {
 		compatible = "qcom,pm6150l-rpmh-regulators";
 		qcom,pmic-id = "c";
 
@@ -374,11 +375,6 @@
 		vreg_s2c_0p6: smps2 {
 			regulator-min-microvolt = <348000>;
 			regulator-max-microvolt = <648000>;
-		};
-
-		vreg_s3c_1p8: smps3 {
-			regulator-min-microvolt = <1800000>;
-			regulator-max-microvolt = <1900000>;
 		};
 
 		vreg_s8c_1p3: smps8 {
